@@ -16,7 +16,7 @@ torch.serialization.add_safe_globals([DataTensorAttr, DataEdgeAttr, GlobalStorag
 
 st.set_page_config(page_title="LightGCN Book Recommender", layout="centered")
 st.title("📚 Graph-Based Book Recommendation System")
-st.markdown("Built with **LightGCN** on the Book-Crossing dataset (filtered subset)")
+st.markdown("Built with **LightGCN** on the Book-Crossing dataset")
 
 @st.cache_resource
 def load_all_data():
@@ -128,7 +128,17 @@ def recommend(user_id: int, k: int = 10):
 
 # UI
 st.sidebar.header("🔍 Find Recommendations")
-user_input = st.sidebar.text_input("Enter User-ID (e.g., 242, 254, 507)", value="242")
+
+# Let user choose input method: dropdown (searchable) or manual entry
+input_mode = st.sidebar.radio("Choose input method", ["Dropdown", "Manual entry"], index=0)
+
+if input_mode == "Dropdown":
+    # populate dropdown with available user IDs (searchable selectbox)
+    users = sorted(list(data_dict['user_to_node'].keys()))
+    default_index = users.index(242) if 242 in users else 0
+    user_input = st.sidebar.selectbox("Select User-ID", users, index=default_index)
+else:
+    user_input = st.sidebar.text_input("Enter User-ID (e.g., 242, 254, 507)", value="242")
 
 if st.sidebar.button("Get Recommendations", type="primary"):
     try:
