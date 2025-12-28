@@ -140,11 +140,45 @@ if input_mode == "Dropdown":
 else:
     user_input = st.sidebar.text_input("Enter User-ID (e.g., 242, 254, 507)", value="242")
 
+# Option to show user's rated books alongside recommendations
+show_rated = st.sidebar.checkbox("Also show user's rated books", value=False)
+
+# Section to explore most-rated books in the dataset
+st.sidebar.markdown("---")
+st.sidebar.header("📊 Explore Dataset")
+top_k = st.sidebar.slider("Top K most-rated books", min_value=5, max_value=50, value=10, step=5)
+if st.sidebar.button("Show Most Rated Books"):
+    counts = data_dict['ratings'].groupby('ISBN').size().reset_index(name='RatingsCount')
+    top = counts.sort_values('RatingsCount', ascending=False).head(top_k)
+    top = top.merge(data_dict['book_metadata'][['Book-Title', 'Book-Author']].reset_index(), on='ISBN', how='left')
+    top['Book-Title'] = top['Book-Title'].fillna('Unknown Title')
+    top['Book-Author'] = top['Book-Author'].fillna('Unknown Author')
+    display_df = top[['Book-Title', 'Book-Author', 'RatingsCount']]
+    display_df.columns = ['Title', 'Author', 'RatingsCount']
+    st.subheader(f"Top {len(display_df)} Most-Rated Books")
+    st.dataframe(display_df, use_container_width=True)
+
 if st.sidebar.button("Get Recommendations", type="primary"):
     try:
         user_id = int(user_input)
+
+        # Optionally show books the user has already rated
+        if show_rated:
+            user_rated = data_dict['ratings'][data_dict['ratings']['User-ID'] == user_id]
+            if user_rated.empty:
+                st.info(f"User {user_id} has not rated any books.")
+            else:
+                rated = user_rated.merge(data_dict['book_metadata'][['Book-Title', 'Book-Author']].reset_index(), on='ISBN', how='left')
+                rated['Book-Title'] = rated['Book-Title'].fillna('Unknown Title')
+                rated['Book-Author'] = rated['Book-Author'].fillna('Unknown Author')
+                rated = rated[['Book-Title', 'Book-Author', 'Book-Rating']]
+                rated.columns = ['Title', 'Author', 'Rating']
+                st.subheader(f"Books rated by User {user_id}")
+                st.dataframe(rated.sort_values('Rating', ascending=False), use_container_width=True)
+
         with st.spinner("Thinking..."):
             recs = recommend(user_id)
+
         if recs is None:
             st.error(f"User {user_id} not found in dataset")
         elif recs.empty:
