@@ -14,7 +14,7 @@ import torch.serialization
 torch.serialization.add_safe_globals([DataTensorAttr, DataEdgeAttr, GlobalStorage])
 
 st.set_page_config(page_title="LightGCN Book Recommender", layout="centered")
-st.title("📚 Graph-Based Book Recommendation System")
+st.title(" Graph-Based Book Recommendation System")
 st.markdown("Built with **LightGCN** on the Book-Crossing dataset")
 
 @st.cache_resource
@@ -134,7 +134,7 @@ def recommend(user_id: int, k: int = 10):
     return rec_df
 
 # UI
-st.sidebar.header("🔍 Find Recommendations")
+st.sidebar.header(" Find Recommendations")
 
 input_mode = st.sidebar.radio("Choose input method", ["Dropdown", "Manual entry"], index=0)
 
@@ -148,7 +148,7 @@ else:
 show_rated = st.sidebar.checkbox("Also show user's rated books", value=False)
 
 st.sidebar.markdown("---")
-st.sidebar.header("📊 Explore Dataset")
+st.sidebar.header(" Explore Dataset")
 top_k = st.sidebar.slider("Top K most-rated books", min_value=5, max_value=50, value=10, step=5)
 
 if st.sidebar.button("Show Most Rated Books"):
